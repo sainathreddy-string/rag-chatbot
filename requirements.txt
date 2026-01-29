@@ -25,4 +25,5 @@ requests==2.32.5
 numpy==1.26.4
 scikit-learn==1.8.0
 scipy==1.17.0
+pinecone-client==2.2.4
 
