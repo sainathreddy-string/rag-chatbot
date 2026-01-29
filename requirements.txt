@@ -1,0 +1,28 @@
+# --- Core ---
+Flask==3.1.2
+python-dotenv==1.2.1
+
+# --- LangChain stack ---
+langchain==0.2.16
+langchain-community==0.2.16
+langchain-core==0.2.38
+langchain-text-splitters==0.2.4
+
+# --- Embeddings ---
+sentence-transformers==2.7.0
+torch==2.10.0
+transformers==4.41.2
+huggingface-hub==0.23.5
+
+# --- Vector DB ---
+pinecone-client==3.0.2
+
+# --- LLM (Groq) ---
+groq==1.0.0
+
+# --- Utilities ---
+requests==2.32.5
+numpy==1.26.4
+scikit-learn==1.8.0
+scipy==1.17.0
+
