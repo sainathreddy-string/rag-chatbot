@@ -1,25 +1,22 @@
 import os
-from dotenv import load_dotenv
-from pinecone import Pinecone
+import pinecone
 from langchain_community.vectorstores import Pinecone as LangchainPinecone
 
-load_dotenv()
 
-def get_vectorstore(documents, embeddings):
-    # Create Pinecone client
-    pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-
-    # Get existing index (must already exist in dashboard)
-    index = pc.Index("rag-chatbot")
-
-    # Let LangChain wrap the index
-    vectorstore = LangchainPinecone(
-        index=index,
-        embedding=embeddings,
-        text_key="text"
+def get_vectorstore(docs, embeddings):
+    pinecone.init(
+        api_key=os.environ.get("PINECONE_API_KEY"),
+        environment=os.environ.get("PINECONE_ENV")
     )
 
-    # Add documents
-    vectorstore.add_documents(documents)
+    index_name = os.environ.get("PINECONE_INDEX")
+
+    index = pinecone.Index(index_name)
+
+    vectorstore = LangchainPinecone.from_documents(
+        documents=docs,
+        embedding=embeddings,
+        index_name=index_name
+    )
 
     return vectorstore
