@@ -1,17 +1,6 @@
-from langchain_core.embeddings import Embeddings
-
-class DummyEmbeddings(Embeddings):
-    """
-    Dummy embeddings for Render deployment.
-    Pinecone already contains vectors, so we do NOT re-embed.
-    """
-
-    def embed_documents(self, texts):
-        return [[0.0] * 768 for _ in texts]
-
-    def embed_query(self, text):
-        return [0.0] * 768
-
+from langchain_huggingface import HuggingFaceEmbeddings
 
 def get_embeddings():
-    return DummyEmbeddings()
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
