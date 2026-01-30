@@ -1,22 +1,29 @@
 import os
-import pinecone
-from langchain_community.vectorstores import Pinecone as LangchainPinecone
+from pinecone import Pinecone
+from langchain_pinecone import PineconeVectorStore
 
 
-def get_vectorstore(docs, embeddings):
-    pinecone.init(
-        api_key=os.environ.get("PINECONE_API_KEY"),
-        environment=os.environ.get("PINECONE_ENV")
+def get_vectorstore(docs, embeddings=None):
+    api_key = os.getenv("PINECONE_API_KEY")
+    index_name = os.getenv("PINECONE_INDEX")
+
+    if not api_key or not index_name:
+        raise ValueError("PINECONE_API_KEY or PINECONE_INDEX not set")
+
+    # Initialize Pinecone client
+    pc = Pinecone(api_key=api_key)
+
+    # Connect to existing index
+    index = pc.Index(index_name)
+
+    # 🔥 IMPORTANT: DO NOT PASS embeddings here
+    vectorstore = PineconeVectorStore(
+        index=index,
+        namespace="default"
     )
 
-    index_name = os.environ.get("PINECONE_INDEX")
-
-    index = pinecone.Index(index_name)
-
-    vectorstore = LangchainPinecone.from_documents(
-        documents=docs,
-        embedding=embeddings,
-        index_name=index_name
-    )
+    # Add documents only ONCE (avoid duplicates in prod)
+    if docs:
+        vectorstore.add_documents(docs)
 
     return vectorstore

@@ -1,13 +1,17 @@
 import os
 from flask import Flask, request, jsonify, render_template
 from langchain_core.documents import Document
-
-from app.embeddings import get_embeddings
 from app.pinecone_db import get_vectorstore
 from app.rag_chain import build_rag_chain
 from app.groq_langchain_llm import GroqLangChainLLM
 
+from dotenv import load_dotenv
 
+# ---------------- ENV LOADING ----------------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
+# ---------------- FLASK APP ----------------
 app = Flask(
     __name__,
     template_folder="../templates",
@@ -21,13 +25,13 @@ docs = [
     Document(page_content="Pinecone is a vector database used in RAG systems."),
 ]
 
-embeddings = get_embeddings()
-vectorstore = get_vectorstore(docs, embeddings)
+# 🔥 IMPORTANT: NO embeddings here
+vectorstore = get_vectorstore(docs)
 
 llm = GroqLangChainLLM()
 rag_chain = build_rag_chain(llm, vectorstore)
 
-# ----------------------------------------------------------------
+# ---------------------------------------------------------------
 
 
 # 🔹 UI Route
@@ -48,7 +52,7 @@ def chat():
     try:
         result = rag_chain.invoke({
             "question": user_message,
-            "chat_history": []   # REQUIRED
+            "chat_history": []
         })
 
         if isinstance(result, dict):
@@ -56,7 +60,7 @@ def chat():
         else:
             answer = str(result)
 
-        # 🔹 Hybrid fallback (LLM knowledge)
+        # 🔹 Hybrid fallback (LLM general knowledge)
         if not answer or len(answer.strip()) < 15:
             fallback = llm.invoke(user_message)
             return jsonify({"response": fallback})
@@ -69,7 +73,7 @@ def chat():
         return jsonify({"response": fallback})
 
 
-# 🔹 REQUIRED FOR CLOUD DEPLOYMENT
+# 🔹 REQUIRED FOR RENDER / CLOUD
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     print(f"\n🚀 Server running on port {port}\n")
